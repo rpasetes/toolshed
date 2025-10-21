@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to MP3 Converter - Toolshed</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #333;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        .back-link {
+            color: #0066cc;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            margin-top: 0;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .converter-container {
+            background: #f9f9f9;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="url"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        input[type="url"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #0052a3;
+        }
+
+        button:active {
+            background: #003d7a;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.success {
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status.error {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+        }
+
+        .status.loading {
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            color: #1565c0;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.75rem 1.5rem;
+            background: #0066cc;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .download-link:hover {
+            background: #0052a3;
+        }
+
+        .info {
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .info h3 {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 1rem;
+        }
+
+        .info ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .info li {
+            margin-bottom: 0.25rem;
+        }
+
+        .debug-info {
+            background: #f0f0f0;
+            padding: 0.75rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #555;
+            display: none;
+            font-family: 'Courier New', monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+        }
+
+        .debug-info.show {
+            display: block;
+        }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .converter-container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="index.html" class="back-link">← Back to Toolshed</a>
+        <h1>YouTube to MP3 ⚰️</h1>
+        <p class="subtitle">Convert YouTube videos to MP3 audio files (abandoned project)</p>
+    </header>
+
+    <main>
+        <div class="converter-container">
+            <form id="converterForm">
+                <div class="form-group">
+                    <label for="youtubeUrl">YouTube URL</label>
+                    <input type="url" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+                </div>
+
+                <button type="submit" id="convertBtn">Convert to MP3</button>
+            </form>
+
+            <div id="status" class="status"></div>
+            <div id="debugInfo" class="debug-info"></div>
+        </div>
+
+        <div class="info">
+            <h3>How it Would Work (In Theory)</h3>
+            <ul>
+                <li>Paste a YouTube URL in the field above</li>
+                <li>Click "Convert to MP3" to start the conversion</li>
+                <li>Watch as multiple APIs immediately fail</li>
+                <li>Contemplate the futility of fighting YouTube's anti-scraping measures</li>
+                <li>Visit <a href="https://yt1s.com" target="_blank">yt1s.com</a> directly instead</li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>Why This Project Failed</h3>
+            <ul>
+                <li><strong>YouTube hates fun:</strong> They actively block all automated download attempts</li>
+                <li><strong>API graveyard:</strong> Every service we tried is either dead, rate-limited, or shuttered by YouTube's legal team</li>
+                <li><strong>CORS demons:</strong> Browsers refuse to talk to external services for "security reasons"</li>
+                <li><strong>The great API collapse of 2024:</strong> Services like cobalt.tools shut down literally weeks before we tried them</li>
+                <li><strong>We're not smart enough:</strong> We needed a backend server, but we wanted to keep it simple. Narrator: <em>We did not keep it simple.</em></li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <h3>What We Learned</h3>
+            <ul>
+                <li>YouTube-to-MP3 conversion is a fight you cannot win with client-side code alone</li>
+                <li>Every free API eventually dies fighting YouTube's legal department</li>
+                <li>The WASM approach would have just made us sad faster, but bigger</li>
+                <li>Sometimes the simplest solution is admitting defeat and accepting limitations</li>
+                <li>This took way longer than it should have. We're not mad, we're just disappointed (mostly in ourselves)</li>
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <p>Part of <a href="index.html">Toolshed</a>. <a href="https://github.com/rpasetes/toolshed">View source on
+                GitHub</a></p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('converterForm');
+        const urlInput = document.getElementById('youtubeUrl');
+        const convertBtn = document.getElementById('convertBtn');
+        const statusDiv = document.getElementById('status');
+        const debugDiv = document.getElementById('debugInfo');
+
+        // Debug logging
+        const logs = [];
+        function log(message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            logs.push(entry);
+            if (data) logs.push(JSON.stringify(data, null, 2));
+            console.log(entry, data);
+            updateDebugInfo();
+        }
+
+        function updateDebugInfo() {
+            debugDiv.textContent = logs.join('\n');
+        }
+
+        // Extract video ID from YouTube URL
+        function getVideoId(url) {
+            try {
+                const urlObj = new URL(url);
+                if (urlObj.hostname.includes('youtu.be')) {
+                    return urlObj.pathname.slice(1).split('?')[0];
+                } else if (urlObj.hostname.includes('youtube.com')) {
+                    return urlObj.searchParams.get('v');
+                }
+            } catch (err) {
+                log('Error extracting video ID', err);
+                return null;
+            }
+            return null;
+        }
+
+        // Array of fallback conversion services
+        const conversionApis = [
+            {
+                name: 'Direct Redirect (yt1s.com)',
+                handler: async (videoId, url) => {
+                    log('Trying direct redirect to yt1s.com');
+                    return {
+                        direct: true,
+                        url: `https://yt1s.com/en/api/ajaxConvert?v=${videoId}&f=mp3`
+                    };
+                }
+            },
+            {
+                name: 'y2mate redirect',
+                handler: async (videoId, url) => {
+                    log('Trying y2mate redirect');
+                    return {
+                        direct: true,
+                        url: `https://www.y2mate.com/en${url}`
+                    };
+                }
+            },
+            {
+                name: 'MP3-YouTube API',
+                handler: async (videoId, url) => {
+                    log('Trying mp3-youtube.download API');
+                    const response = await fetch(`https://api.mp3-youtube.download/download?url=${encodeURIComponent(url)}`);
+                    log(`API response status: ${response.status}`);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    log('API response received', { hasUrl: !!data.url });
+
+                    if (data.url) {
+                        return { url: data.url, direct: false };
+                    }
+                    throw new Error('No URL in response');
+                }
+            }
+        ];
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            logs.length = 0; // Clear previous logs
+            debugDiv.classList.remove('show');
+
+            const url = urlInput.value.trim();
+            if (!url) return;
+
+            log('Form submitted', { url });
+
+            // Validate URL first
+            if (!isValidYouTubeUrl(url)) {
+                log('Invalid YouTube URL');
+                statusDiv.className = 'status show error';
+                statusDiv.textContent = 'Please enter a valid YouTube URL';
+                return;
+            }
+
+            const videoId = getVideoId(url);
+            if (!videoId) {
+                log('Could not extract video ID');
+                statusDiv.className = 'status show error';
+                statusDiv.textContent = 'Could not extract video ID from URL';
+                return;
+            }
+
+            log('Extracted video ID', { videoId });
+
+            // Show loading state
+            convertBtn.disabled = true;
+            convertBtn.innerHTML = '<span class="spinner"></span>Converting...';
+            statusDiv.className = 'status show loading';
+            statusDiv.textContent = 'Processing your video... This may take a minute or two.';
+            debugDiv.classList.add('show');
+
+            // Try each API in sequence
+            for (const api of conversionApis) {
+                try {
+                    log(`Attempting: ${api.name}`);
+                    const result = await api.handler(videoId, url);
+
+                    if (result.direct) {
+                        log(`Using direct redirect to: ${result.url}`);
+                        window.location.href = result.url;
+                        return;
+                    }
+
+                    if (result.url) {
+                        log(`Got download URL, initiating download`);
+                        const a = document.createElement('a');
+                        a.href = result.url;
+                        a.download = true;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+
+                        statusDiv.className = 'status show success';
+                        statusDiv.innerHTML = '<strong>✓ Conversion complete!</strong><br>Your MP3 file is downloading.';
+                        urlInput.value = '';
+                        convertBtn.disabled = false;
+                        convertBtn.innerHTML = 'Convert to MP3';
+                        log('Download initiated successfully');
+                        return;
+                    }
+                } catch (error) {
+                    log(`${api.name} failed: ${error.message}`);
+                    continue;
+                }
+            }
+
+            // All APIs failed
+            log('All conversion methods failed');
+            statusDiv.className = 'status show error';
+            statusDiv.innerHTML = `
+                <strong>✗ All conversion methods failed</strong><br>
+                <small>YouTube's protections are preventing automatic conversion. Try:</small>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem; font-size: 0.9rem;">
+                    <li>Using a different YouTube URL</li>
+                    <li>Checking if the video is public</li>
+                    <li>Waiting a few minutes and trying again</li>
+                    <li><a href="https://yt1s.com" target="_blank">Visit yt1s.com directly</a></li>
+                </ul>
+                <br><strong>Debug Information:</strong> Open developer console to see error details
+            `;
+
+            convertBtn.disabled = false;
+            convertBtn.innerHTML = 'Convert to MP3';
+        });
+
+        // Validate URL input in real-time
+        urlInput.addEventListener('change', () => {
+            const url = urlInput.value.trim();
+            if (url && !isValidYouTubeUrl(url)) {
+                statusDiv.className = 'status show error';
+                statusDiv.textContent = 'Please enter a valid YouTube URL';
+            } else {
+                statusDiv.className = 'status';
+            }
+        });
+
+        function isValidYouTubeUrl(url) {
+            try {
+                const urlObj = new URL(url);
+                return urlObj.hostname.includes('youtube.com') ||
+                    urlObj.hostname.includes('youtu.be');
+            } catch {
+                return false;
+            }
+        }
+    </script>
+</body>
+
+</html>
