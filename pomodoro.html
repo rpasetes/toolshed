@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                         Helvetica, Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.6s ease;
+        }
+
+        /* Active timer state transitions */
+        .container.active {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: scale(1.02);
+        }
+
+        .container.work.active {
+            background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+        }
+
+        .container.break.active {
+            background: linear-gradient(135deg, #f5fff5 0%, #e8ffe8 100%);
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: clamp(20px, 4vw, 28px);
+            color: #333;
+        }
+
+        .mode-label {
+            font-size: 14px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+            transition: color 0.6s ease;
+        }
+
+        .container.work.active .mode-label {
+            color: #d32f2f;
+        }
+
+        .container.break.active .mode-label {
+            color: #388e3c;
+        }
+
+        .timer-display {
+            font-size: clamp(48px, 12vw, 96px);
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin: 30px 0;
+            font-variant-numeric: tabular-nums;
+            color: #333;
+            transition: all 0.6s ease;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .container.work.active .timer-display {
+            color: #d32f2f;
+            text-shadow: 0 0 20px rgba(211, 47, 47, 0.2);
+        }
+
+        .container.break.active .timer-display {
+            color: #388e3c;
+            text-shadow: 0 0 20px rgba(56, 142, 60, 0.2);
+        }
+
+        /* Pulse animation for active timer */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.85;
+            }
+        }
+
+        .container.active .timer-display {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .session-info {
+            font-size: 14px;
+            color: #999;
+            margin: 20px 0 30px 0;
+            transition: color 0.6s ease;
+        }
+
+        .container.work.active .session-info {
+            color: #d32f2f;
+        }
+
+        .container.break.active .session-info {
+            color: #388e3c;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        button:hover {
+            background-color: #0052a3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .secondary-btn {
+            background-color: #999;
+        }
+
+        .secondary-btn:hover {
+            background-color: #777;
+        }
+
+        .mode-toggle {
+            background-color: #666;
+            font-size: 13px;
+            padding: 10px 16px;
+        }
+
+        .mode-toggle:hover {
+            background-color: #555;
+        }
+
+        .container.work.active .mode-toggle {
+            background-color: #d32f2f;
+        }
+
+        .container.work.active .mode-toggle:hover {
+            background-color: #b71c1c;
+        }
+
+        .container.break.active .mode-toggle {
+            background-color: #388e3c;
+        }
+
+        .container.break.active .mode-toggle:hover {
+            background-color: #2e7d32;
+        }
+
+        /* Pause button styling */
+        .pause-btn {
+            background-color: #0066cc;
+        }
+
+        .pause-btn:hover {
+            background-color: #0052a3;
+        }
+
+        .container.work.active .pause-btn {
+            background-color: #d32f2f;
+        }
+
+        .container.work.active .pause-btn:hover {
+            background-color: #b71c1c;
+        }
+
+        .container.break.active .pause-btn {
+            background-color: #388e3c;
+        }
+
+        .container.break.active .pause-btn:hover {
+            background-color: #2e7d32;
+        }
+
+        .keyboard-hint {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 20px;
+            transition: color 0.6s ease;
+        }
+
+        .container.active .keyboard-hint {
+            color: #999;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .controls {
+                gap: 8px;
+            }
+
+            button {
+                padding: 10px 16px;
+                font-size: 13px;
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container work">
+        <h1>Pomodoro</h1>
+        <div class="mode-label" id="modeLabel">Work</div>
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="session-info" id="sessionInfo">Completed: 0</div>
+
+        <div class="controls">
+            <button id="startBtn" onclick="startTimer()">Start</button>
+            <button class="pause-btn" id="pauseBtn" onclick="pauseTimer()" style="display: none;">Pause</button>
+            <button class="secondary-btn" id="resetBtn" onclick="resetTimer()">Reset</button>
+            <button class="mode-toggle" id="toggleBtn" onclick="toggleMode()">Switch Mode</button>
+        </div>
+
+        <div class="keyboard-hint" id="keyboardHint">
+            Space to start/pause • R to reset • M to switch mode
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const WORK_DURATION = 25 * 60; // 25 minutes in seconds
+        const BREAK_DURATION = 5 * 60; // 5 minutes in seconds
+
+        // State
+        let mode = 'work'; // 'work' or 'break'
+        let timeRemaining = WORK_DURATION;
+        let isRunning = false;
+        let completedSessions = 0;
+        let timerInterval = null;
+
+        // DOM elements
+        const container = document.querySelector('.container');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const modeLabel = document.getElementById('modeLabel');
+        const sessionInfo = document.getElementById('sessionInfo');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const toggleBtn = document.getElementById('toggleBtn');
+
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Update display
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(timeRemaining);
+        }
+
+        // Start timer
+        function startTimer() {
+            if (isRunning) return;
+
+            isRunning = true;
+            container.classList.add('active');
+            startBtn.style.display = 'none';
+            pauseBtn.style.display = 'inline-block';
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateDisplay();
+
+                // Timer finished
+                if (timeRemaining <= 0) {
+                    handleTimerComplete();
+                }
+            }, 1000);
+        }
+
+        // Pause timer
+        function pauseTimer() {
+            if (!isRunning) return;
+
+            isRunning = false;
+            container.classList.remove('active');
+            clearInterval(timerInterval);
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+        }
+
+        // Reset timer
+        function resetTimer() {
+            pauseTimer();
+            timeRemaining = mode === 'work' ? WORK_DURATION : BREAK_DURATION;
+            updateDisplay();
+        }
+
+        // Handle timer completion
+        function handleTimerComplete() {
+            pauseTimer();
+
+            // Play a subtle notification sound (optional)
+            playNotification();
+
+            if (mode === 'work') {
+                completedSessions++;
+                sessionInfo.textContent = `Completed: ${completedSessions}`;
+                switchToBreak();
+            } else {
+                switchToWork();
+            }
+
+            // Auto-start the next timer
+            setTimeout(() => {
+                startTimer();
+            }, 500);
+        }
+
+        // Switch to break mode
+        function switchToBreak() {
+            mode = 'break';
+            timeRemaining = BREAK_DURATION;
+            modeLabel.textContent = 'Break';
+            container.classList.remove('work');
+            container.classList.add('break');
+            updateDisplay();
+        }
+
+        // Switch to work mode
+        function switchToWork() {
+            mode = 'work';
+            timeRemaining = WORK_DURATION;
+            modeLabel.textContent = 'Work';
+            container.classList.remove('break');
+            container.classList.add('work');
+            updateDisplay();
+        }
+
+        // Toggle mode manually
+        function toggleMode() {
+            pauseTimer();
+            if (mode === 'work') {
+                switchToBreak();
+            } else {
+                switchToWork();
+            }
+        }
+
+        // Play notification sound
+        function playNotification() {
+            // Use Web Audio API to create a simple beep
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (err) {
+                // Fallback if Web Audio API fails
+                console.log('Timer completed');
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (isRunning) {
+                    pauseTimer();
+                } else {
+                    startTimer();
+                }
+            } else if (e.key.toLowerCase() === 'r') {
+                resetTimer();
+            } else if (e.key.toLowerCase() === 'm') {
+                toggleMode();
+            }
+        });
+
+        // Initialize display
+        updateDisplay();
+    </script>
+</body>
+</html>
