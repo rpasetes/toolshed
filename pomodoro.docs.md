@@ -20,10 +20,6 @@ A clean, distraction-free pomodoro timer with subtle visual transitions. Feature
 4. Use **Switch Mode** to manually change between work and break
 5. Use keyboard shortcuts for faster control (see hints at bottom)
 
-## Technical notes
+---
 
-- Pure vanilla JavaScript with Web Audio API for notifications
-- Responsive design using CSS Grid and media queries
-- Subtle pulse animation during active sessions
-- Color coding: Red for work sessions, green for breaks
-- Auto-advance to next session for continuous workflow
+**Development notes**: [GitHub Gist](https://gist.github.com/rpasetes/ea9c4c07371911fc18d86ed10ae15392)
